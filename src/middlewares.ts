@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import {ExifImage} from 'exif';
 import {ErrorResponse} from './types/MessageTypes';
 import CustomError from './classes/CustomError';
+import {validationResult} from 'express-validator';
 // import chalk from 'chalk';
 
 // convert GPS coordinates to decimal format
@@ -87,4 +88,23 @@ const makeThumbnail = async (
   }
 };
 
-export {notFound, errorHandler, getCoordinates, makeThumbnail};
+const validationErrors = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const messages: string = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    console.log('user_post validation', messages);
+    next(new CustomError(messages, 400));
+    return;
+  }
+  next();
+};
+
+export {notFound, errorHandler, getCoordinates, makeThumbnail, validationErrors};

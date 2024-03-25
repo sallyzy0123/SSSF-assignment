@@ -25,11 +25,24 @@ const getAllCats = async (): Promise<Cat[]> => {
   return cats;
 };
 
+// ✅
 // TODO: create getCat function to get single cat
+const getCat = async (id: number) => {
+  const sql = promisePool.format(
+    'SELECT * FROM sssf_cat WHERE cat_id = ? ;',
+    [id]
+  )
+  const [rows] = await promisePool.execute<RowDataPacket[] & Cat[]>(sql);
+  if (rows.length === 0) {
+    throw new CustomError('No cat found', 404);
+  }
+  return rows[0] as Cat;
+};
 
+// ✅
 // TODO: use Utility type to modify Cat type for 'data'.
 // Note that owner is not User in this case. It's just a number (user_id)
-const addCat = async (data): Promise<MessageResponse> => {
+const addCat = async (data: Omit<Cat, 'cat_id' | 'owner'> & {owner: number}): Promise<UploadResponse> => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
     `
     INSERT INTO sssf_cat (cat_name, weight, owner, filename, birthdate, coords) 
@@ -48,13 +61,36 @@ const addCat = async (data): Promise<MessageResponse> => {
   if (headers.affectedRows === 0) {
     throw new CustomError('No cats added', 400);
   }
-  return {message: 'Cat added'};
+  const catId = headers.insertId;
+  return {message: 'Cat added', id: catId};
 };
 
+// ✅
 // TODO: create updateCat function to update single cat
 // if role is admin, update any cat
 // if role is user, update only cats owned by user
 // You can use updateUser function from userModel as a reference for SQL
+const updateCat = async (data: Pick<Cat, 'cat_name'>, catId: number, userId: number, userRole: string) => {
+  if (userRole === 'admin') {
+    const [headers] = await promisePool.execute<ResultSetHeader>(
+      `UPDATE sssf_cat SET cat_name = ? WHERE cat_id = ?;`,
+      [data.cat_name, catId]
+    )
+    if (headers.affectedRows === 0) {
+      throw new CustomError('No cats updated', 400);
+    }
+    return {message: 'Cat updated'};
+  } else {
+    const [headers] = await promisePool.execute<ResultSetHeader>(
+      `UPDATE sssf_cat SET cat_name = ? WHERE cat_id = ? AND owner = ?;`,
+      [data.cat_name, catId, userId]
+    )
+    if (headers.affectedRows === 0) {
+      throw new CustomError('No cats updated', 400);
+    }
+    return {message: 'Cat updated'};
+  }
+};
 
 const deleteCat = async (catId: number): Promise<MessageResponse> => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
@@ -70,4 +106,9 @@ const deleteCat = async (catId: number): Promise<MessageResponse> => {
   return {message: 'Cat deleted'};
 };
 
-export {getAllCats, getCat, addCat, updateCat, deleteCat};
+export {
+  getAllCats, 
+  getCat, 
+  addCat, 
+  updateCat, 
+  deleteCat};

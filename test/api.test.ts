@@ -27,16 +27,19 @@ describe('GET /api/v1', () => {
     await closePool();
   });
 
+  // ✅
   // test not found
   it('responds with a not found message', async () => {
     await getNotFound(app);
   });
 
+  // ✅ 
   // test login error
   it('should return error message on invalid credentials', async () => {
     await postAuthLoginError(app);
   });
 
+  // ✅
   // test create user
   let token = '';
   it('should create a new user', async () => {
@@ -47,6 +50,7 @@ describe('GET /api/v1', () => {
     });
   });
 
+  // ✅
   // test login
   it('should return a user object and bearer token on valid credentials', async () => {
     const user = await postAuthLogin(app, {
@@ -56,6 +60,7 @@ describe('GET /api/v1', () => {
     token = user.token;
   });
 
+  // ✅
   // test get all users
   let userId = 0;
   it('should return array of users', async () => {
@@ -63,16 +68,19 @@ describe('GET /api/v1', () => {
     userId = users[0].user_id!;
   });
 
+  // ✅
   // test get single user
   it('should return single user', async () => {
     await getSingleUser(app, userId);
   });
 
+  // ✅
   // test update user
   it('should update user', async () => {
     await putUser(app, token);
   });
 
+  // ✅
   // test get current user based on token
   let owner = 0;
   it('should return current user', async () => {
@@ -80,6 +88,7 @@ describe('GET /api/v1', () => {
     owner = user.user_id;
   });
 
+  // ✅
   // test cat upload without GPS
   let catID = 0;
   it('should upload a cat', async () => {
@@ -87,6 +96,7 @@ describe('GET /api/v1', () => {
     catID = message.id!;
   });
 
+  // ✅
   // test cat upload with GPS
   let catID2 = 0;
   it('should upload a cat with GPS', async () => {
@@ -94,42 +104,50 @@ describe('GET /api/v1', () => {
     catID2 = message.id!;
   });
 
+  // ✅
   // test get all cats
   it('should return array of cats', async () => {
     await getCat(app);
   });
 
+  // ✅
   // test get single cat
   it('should return single cat', async () => {
     await getSingleCat(app, catID);
   });
 
+  // ✅
   // modify user's cat
   it('should modify a cat', async () => {
     await userPutCat(app, token, catID);
   });
 
+  // ✅
   // test delete user's cat
   it('should delete a cat', async () => {
     await userDeleteCat(app, token, catID);
   });
 
+  // ✅
   // delete GPS image
   it('should delete GPS image', async () => {
     await userDeleteCat(app, token, catID2);
   });
 
+  // ✅
   // upload another cat for admin tests
   it('should upload a cat for admin test', async () => {
     const message = await postCat(app, token, owner, 'cat.jpg');
     catID = message.id!;
   });
 
+  // ✅
   // test delete user based on token
   it('should delete current user', async () => {
     await deleteUser(app, token);
   });
 
+  // ✅
   // login as admin
   it('should login as admin', async () => {
     const user = await postAuthLogin(app, {
@@ -139,11 +157,13 @@ describe('GET /api/v1', () => {
     token = user.token;
   });
 
+  // ✅
   // test modify user's cat as admin
   it('should modify a cat as admin', async () => {
     await adminPutCat(app, token, catID);
   });
 
+  // ✅
   // test delete user's cat as admin
   it('should delete a cat as admin', async () => {
     await userDeleteCat(app, token, catID);
